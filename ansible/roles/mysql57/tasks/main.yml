@@ -1,0 +1,54 @@
+---
+- name: add repo
+  command: rpm -ih http://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm creates=/etc/yum.repos.d/mysql-community.repo
+
+- name: install mysql-community-server
+  yum: name=mysql-community-server state=installed
+
+- name: install MySQL-python needed for ansible mysql_user module
+  yum: name=MySQL-python state=installed
+
+- name: start and enable mysqld
+  service: name=mysqld state=started enabled=yes
+
+- name: check .my.cnf exists
+  stat:
+    path: /root/.my.cnf
+  register: mycnf_file
+
+- name: get temporary password
+  shell: cat /var/log/mysqld.log | grep "temporary password" | awk '{print $11}'
+  register: mysql_default_password
+  when: not mycnf_file.stat.exists
+
+- name: deploy init mycnf
+  template:
+    src: ../templates/init_my.cnf
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0644
+  when: not mycnf_file.stat.exists
+
+- name: change password validation to the easy way
+  shell: |
+    mysql -u root -p'{{ mysql_default_password.stdout }}' --connect-expired-password -e "SET GLOBAL validate_password_length=4;"
+    mysql -u root -p'{{ mysql_default_password.stdout }}' --connect-expired-password -e "SET GLOBAL validate_password_policy=LOW;"
+  when: not mycnf_file.stat.exists
+
+- name: change root user password
+  shell: mysql -u root -p'{{ mysql_default_password.stdout }}' --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';"
+  when: not mycnf_file.stat.exists
+
+- name: deploy changed .my.cnf
+  template:
+    src: ../templates/my.cnf
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: deploy changed .my.cnf
+  template:
+    src: ../templates/my.cnf
+    dest: /etc/my.cnf
