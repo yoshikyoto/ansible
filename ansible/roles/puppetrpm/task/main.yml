@@ -1,0 +1,3 @@
+---
+- name: for puppet CentOS https://docs.puppet.com/puppet/latest/puppet_platform.html
+  command: rpm -Uvh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-6.noarch.rpm
