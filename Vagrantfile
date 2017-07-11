@@ -4,7 +4,7 @@
 
 Vagrant.configure(2) do |config|
   # vagrant box list とかで出てくるやつ
-  config.vm.box = "centos7"
+  config.vm.box = "centos7.1"
 
   config.vm.hostname = "vagrant"
 
