@@ -6,26 +6,29 @@
   - zlib-devel
 
 - name: check if exiests openssl source (when failed, not downloaded)
-  command: ls -l {{srcdir}}/{{openssl}}.tar.gz
+  command: openssl version
   ignore_errors: True
-  register: opensslls
+  register: check_openssl
+
+- name: yum install openssl-devel
+  yum: pkg=openssl-devel state=latest
 
 - name: download openssl source
   command: chdir={{srcdir}} wget https://www.openssl.org/source/{{openssl}}.tar.gz
-  when: opensslls|failed
+  when: check_openssl|failed
 
 - name: tar openssl
   command: chdir={{srcdir}} tar xvf {{openssl}}.tar.gz
-  when: opensslls|failed
+  when: check_openssl|failed
 
 - name: configure openssl
   command: chdir={{srcdir}}/{{openssl}} ./config
-  when: opensslls|failed
+  when: check_openssl|failed
 
 - name: make openssl
   command: chdir={{srcdir}}/{{openssl}} make
-  when: opensslls|failed
+  when: check_openssl|failed
 
 - name: install openssl
   command: chdir={{srcdir}}/{{openssl}} make install
-  when: opensslls|failed
+  when: check_openssl|failed
