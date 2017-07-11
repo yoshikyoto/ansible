@@ -12,6 +12,7 @@
 
 - name: yum install openssl-devel
   yum: pkg=openssl-devel state=latest
+  when: check_openssl|failed
 
 - name: download openssl source
   command: chdir={{srcdir}} wget https://www.openssl.org/source/{{openssl}}.tar.gz

@@ -1,25 +1,36 @@
 ---
-- name: check if exist emacs src file (when failed, not downloaded)
-  command: ls -l {{srcdir}}/{{emacs}}.tar.gz
+- name: check if exist emacs src
+  command: ls /usr/local/bin/emacs
   ignore_errors: True
-  register: emacsls
+  register: check_emacs
+
+- name: yum install required package
+  yum: pkg={{item}} state=latest
+  with_items:
+  - texinfo
+  - libXpm-devel
+  - giflib-devel
+  - libtiff-devel
+  - libotf-devel
+  - ncurses-devel
+  when: check_emacs|failed
 
 - name: get emacs source file  # ソースファイルをダウンロードする
   command: chdir={{srcdir}} wget http://ftp.jaist.ac.jp/pub/GNU/emacs/{{emacs}}.tar.gz
-  when: emacsls|failed
+  when: check_emacs|failed
 
 - name: tar emacs
   command: chdir={{srcdir}} tar xvf {{emacs}}.tar.gz
-  when: emacsls|failed
+  when: check_emacs|failed
 
 - name: configure emacs
-  command: chdir={{srcdir}}/{{emacs}} ./configure
-  when: emacsls|failed
+  command: chdir={{srcdir}}/{{emacs}} ./configure --with-x-toolkit=no --with-jpeg=no --with-png=no
+  when: check_emacs|failed
 
 - name: make emacs
   command: chdir={{srcdir}}/{{emacs}} make
-  when: emacsls|failed
+  when: check_emacs|failed
 
 - name: install emacs
   command: chdir={{srcdir}}/{{emacs}} make install
-  when: emacsls|failed
+  when: check_emacs|failed
