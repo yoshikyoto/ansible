@@ -1,0 +1,26 @@
+---
+- name: check scala
+  command: which scala
+  ignore_errors: True
+  register: check_scala
+
+- name: yum install scala
+  yum: name=http://downloads.typesafe.com/scala/2.11.7/scala-2.11.7.rpm
+  when: check_scala|failed
+
+- name: check sbt
+  command: which sbt
+  ignore_errors: True
+  register: check_sbt
+
+- name: add sbt rpm repo
+  shell: curl https://bintray.com/sbt/rpm/rpm | tee /etc/yum.repos.d/bintray-sbt-rpm.repo
+  when: check_sbt|failed
+
+- name: yum install sbt
+  yum: name=sbt
+  when: check_sbt|failed
+
+- name: update sbt
+  command: sbt update
+ 
