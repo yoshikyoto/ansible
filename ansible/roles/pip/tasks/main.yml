@@ -1,0 +1,13 @@
+---
+- name: check if exists pip
+  command: which pip
+  ignore_errors: True
+  register: check_pip
+
+- name: get pip installer
+  command: chdir={{srcdir}} wget https://bootstrap.pypa.io/get-pip.py
+  when: check_pip|failed
+
+- name: install pip
+  command: chdir={{srcdir}} python get-pip.py
+  when: check_pip|failed

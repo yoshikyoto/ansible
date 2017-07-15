@@ -1,4 +1,5 @@
-- hosts: all  # とりあえず all
+- hosts: 127.0.0.1
+  connection: local
   sudo: true
   user: vagrant
   vars:
@@ -17,3 +18,4 @@
     - mysql57
     - java8
     - scala
+    - pip
